@@ -7,7 +7,20 @@ document.addEventListener('DOMContentLoaded', () => {
     xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 400) {
             data = JSON.parse(xhr.responseText);
-            console.log(data);
+
+            const cardHtml = data.map(item => `
+              <a href="./product.html?id=${item?._id}">
+                <article>
+                  <img src="${item.imageUrl}" alt="${item.altTxt}">
+                  <h3 class="productName">${item.name}</h3>
+                  <p class="productDescription">${item.description}</p>
+                </article>
+              </a>
+            `).join('');
+
+            const sectionElement = document.querySelector('#items');
+            sectionElement.innerHTML += cardHtml;
+
         } else {
             console.error('Error:', xhr.statusText);
         }
