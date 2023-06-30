@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cartStorage !== null) {
         let cartItemsElement = document.querySelector('#cart__items');
 
-        cartInfo();
+        cartInfo(cartStorage);
 
         // Event delegation:
         // it's a technique in JavaScript where you delegate the event handling of child elements to a parent element.
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const localStorageData = JSON.parse(localStorage.getItem('cart'));
                 const editLocalStorage = localStorageData.map(lsItem => lsItem.id === itemId ? {...lsItem, quantity: event.target.value} : lsItem);
 
-                if (editLocalStorage && editLocalStorage.length > 0 ) {
+                if (editLocalStorage && editLocalStorage.length > 0) {
                     localStorage.setItem('cart', JSON.stringify(editLocalStorage));
                     const getLocalStorage = JSON.parse(localStorage.getItem('cart'));
                     const foundLsItem = getLocalStorage.find(lsItem => lsItem.id === itemId);
@@ -35,23 +35,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Another Event Delegation using
-
         });
 
+        // Another Event Delegation
         cartItemsElement.addEventListener('click', (event) => {
             if (event.target.classList.contains('deleteItem')) {
                 const idToRemove = event.target.closest('.cart__item').getAttribute('data-id');
                 const getLocalStorage = JSON.parse(localStorage.getItem('cart'));
                 const updatedCartList = getLocalStorage.filter(lsItem => lsItem.id !== idToRemove);
                 localStorage.setItem('cart', JSON.stringify(updatedCartList));
-                cartInfo();
+                document.querySelector('#cart__items').innerHTML = '';
+                const updatedLocalStorage = localStorage.getItem('cart');
+                cartInfo(updatedLocalStorage);
             }
         });
 
 
-        function cartInfo() {
-            const cartItems = JSON.parse(cartStorage);
+        function cartInfo(passedInCartStorage) {
+            const cartItems = JSON.parse(passedInCartStorage);
 
             cartItems.forEach((cartItem, index) => {
                 fetch(`http://localhost:3000/api/products/${cartItem.id}`)
@@ -86,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                           </article>
                     `;
+
                         cartItemsElement.insertAdjacentHTML('beforeend', cartItemString);
 
                     })
