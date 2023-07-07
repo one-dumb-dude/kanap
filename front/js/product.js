@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
     let productImage;
-    console.log(id);
+
     fetch(`http://localhost:3000/api/products/${id}`)
         .then(response => response.json())
         .then(data => {

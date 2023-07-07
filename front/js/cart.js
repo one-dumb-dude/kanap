@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartStorage = localStorage.getItem('cart');
 
     if (cartStorage !== null) {
+        const inputOrderSubmitBtn = document.querySelector('#order');
         let cartItemsElement = document.querySelector('#cart__items');
 
         cartInfo(cartStorage);
@@ -41,8 +42,9 @@ document.addEventListener('DOMContentLoaded', () => {
         cartItemsElement.addEventListener('click', (event) => {
             if (event.target.classList.contains('deleteItem')) {
                 const idToRemove = event.target.closest('.cart__item').getAttribute('data-id');
+                const colorOfId = event.target.closest('.cart__item').querySelector('.cart__item__content__description > p:nth-of-type(1)').innerText;
                 const getLocalStorage = JSON.parse(localStorage.getItem('cart'));
-                const updatedCartList = getLocalStorage.filter(lsItem => lsItem.id !== idToRemove);
+                const updatedCartList = getLocalStorage.filter(lsItem => !(lsItem.id === idToRemove && lsItem.color === colorOfId));
                 localStorage.setItem('cart', JSON.stringify(updatedCartList));
                 document.querySelector('#cart__items').innerHTML = '';
                 const updatedLocalStorage = localStorage.getItem('cart');
@@ -50,6 +52,47 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        const alphaRegex = new RegExp(/^[A-Za-z]+$/);
+        const emailRegex = new RegExp(/^[\w.-]+@[a-zA-Z_-]+?(?:\.[a-zA-Z]{2,6})+$/);
+
+        const firstNameInputElement = document.querySelector("#firstName");
+        firstNameInputElement.addEventListener('blur', (event) =>
+            validateInput(event.target, alphaRegex)
+        );
+
+        const lastNameInputElement = document.querySelector("#lastName");
+        lastNameInputElement.addEventListener('blur', (event) =>
+            validateInput(event.target, alphaRegex)
+        );
+
+        const addressInputElement = document.querySelector('#address');
+        addressInputElement.addEventListener('blur', (event) => {
+            console.log(event.target.value);
+            if (event.target.value.trim() === '') {
+                event.target.classList.add('input-error');
+            } else {
+                event.target.classList.remove('input-error');
+            }
+        });
+
+        const cityInputElement = document.querySelector('#city');
+        cityInputElement.addEventListener('blur', (event) =>
+            validateInput(event.target, alphaRegex)
+        );
+
+        // /^[a-zA-Z0-9.! #$%&'*+/=? ^_`{|}~-]+@[a-zA-Z0-9-]+(?:\. [a-zA-Z0-9-]+)*$/
+        const emailInputElement = document.querySelector('#email');
+        emailInputElement.addEventListener('blur', (event) =>
+            validateInput(event.target, emailRegex)
+        );
+
+        function validateInput(target, regex) {
+            if (!target.value.match(regex) || target.value.trim() === '') {
+                target.classList.add('input-error');
+            } else {
+                target.classList.remove('input-error');
+            }
+        }
 
         function cartInfo(passedInCartStorage) {
             const cartItems = JSON.parse(passedInCartStorage);
@@ -73,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
                               <div class="cart__item__content__description">
                                 <h2>${data.name}</h2>
                                 <p>${cartItem.color}</p>
-                                <p>€${Number(data.price)}</p>
+                                <p>€${Number(data.price) * Number(cartItem.quantity)}</p>
                               </div>
                               <div class="cart__item__content__settings">
                                 <div class="cart__item__content__settings__quantity">
@@ -99,8 +142,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
 
+        inputOrderSubmitBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            console.log('submit button clicked');
+            if (
+                firstNameInputElement.value.match(/^[A-Za-z]+$/) &&
+                lastNameInputElement.value.match(/^[A-Za-z]+$/) &&
+                addressInputElement.value.trim() !== '' &&
+                cityInputElement.value.match(/^[A-Za-z]+$/) &&
+                emailInputElement.value.match(/^[\w.-]+@[a-zA-Z_-]+?(?:\.[a-zA-Z]{2,6})+$/)
+            ) {
+                console.log('Passed Validation');
+                window.location.href = 'confirmation.html'
+            } else {
+                validateInput(firstNameInputElement,alphaRegex);
+                validateInput(lastNameInputElement,alphaRegex);
+                validateInput(addressInputElement);
+                validateInput(cityInputElement, alphaRegex);
+                validateInput(emailInputElement, emailRegex);
+                console.error('Please check your input fields');
+            }
+        });
+
     } else {
         console.error('Cart is empty');
     }
+
 
 });
