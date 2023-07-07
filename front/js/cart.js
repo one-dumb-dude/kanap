@@ -144,7 +144,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         inputOrderSubmitBtn.addEventListener('click', (event) => {
             event.preventDefault();
-            console.log('submit button clicked');
             if (
                 firstNameInputElement.value.match(/^[A-Za-z]+$/) &&
                 lastNameInputElement.value.match(/^[A-Za-z]+$/) &&
@@ -152,8 +151,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 cityInputElement.value.match(/^[A-Za-z]+$/) &&
                 emailInputElement.value.match(/^[\w.-]+@[a-zA-Z_-]+?(?:\.[a-zA-Z]{2,6})+$/)
             ) {
-                console.log('Passed Validation');
-                window.location.href = 'confirmation.html'
+                const cartItems = JSON.parse(localStorage.getItem('cart'));
+                const data = {
+                    contact: {
+                        firstName: firstNameInputElement.value,
+                        lastName: lastNameInputElement.value,
+                        address: addressInputElement.value,
+                        city: cityInputElement.value,
+                        email: emailInputElement.value
+                    },
+                    products: cartItems.map(cartItem => cartItem.id)
+                };
+                fetch('http://localhost:3000/api/products/order', {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json",
+                        'Origin': 'http://localhost:63342'
+                    },
+                    body: JSON.stringify(data)
+                })
+                    .then(response => response.json())
+                    .then(result => {
+                        window.location.href = `confirmation.html?orderId=${encodeURIComponent(JSON.stringify(result.orderId))}`;
+                    })
+                    .catch(error => console.error(error))
+                // window.location.href = 'confirmation.html'
+
             } else {
                 validateInput(firstNameInputElement,alphaRegex);
                 validateInput(lastNameInputElement,alphaRegex);
