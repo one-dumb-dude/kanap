@@ -46,9 +46,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             }
-``
+            ``
         });
-
 
 
         // Another Event Delegation
@@ -195,8 +194,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // window.location.href = 'confirmation.html'
 
             } else {
-                validateInput(firstNameInputElement,alphaRegex);
-                validateInput(lastNameInputElement,alphaRegex);
+                validateInput(firstNameInputElement, alphaRegex);
+                validateInput(lastNameInputElement, alphaRegex);
                 validateInput(addressInputElement);
                 validateInput(cityInputElement, alphaRegex);
                 validateInput(emailInputElement, emailRegex);
@@ -205,10 +204,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         function getTotalArticles() {
-            const itemQuantityElements = document.querySelector('#cart__items').querySelectorAll('.itemQuantity');
+            let totalPrice = 0;
+            const cartItemsElement = document.querySelector('#cart__items')
+            const itemQuantityElements = cartItemsElement.querySelectorAll('.itemQuantity');
+            const articleElements = cartItemsElement.querySelectorAll('article');
+            articleElements.forEach(articleElement => {
+                const price = prices.find(price => price.id === articleElement.dataset.id);
+                console.log(price.price);
+                const quantity = articleElement.querySelector('.itemQuantity').value;
+                totalPrice += Number(price.price) * Number(quantity);
+            });
+
             const itemQuantities = Array.prototype.map.call(itemQuantityElements, itemQuantityElement => itemQuantityElement.value);
             const totalQuantity = itemQuantities.reduce((sum, item) => Number(sum) + Number(item), 0);
             const totalQuantityElement = document.querySelector('#totalQuantity');
+            const totalPriceElement = document.querySelector('#totalPrice');
+            totalPriceElement.innerText = totalPrice;
             totalQuantityElement.innerText = totalQuantity;
         }
 
