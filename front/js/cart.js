@@ -210,7 +210,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const articleElements = cartItemsElement.querySelectorAll('article');
             articleElements.forEach(articleElement => {
                 const price = prices.find(price => price.id === articleElement.dataset.id);
-                console.log(price.price);
                 const quantity = articleElement.querySelector('.itemQuantity').value;
                 totalPrice += Number(price.price) * Number(quantity);
             });
