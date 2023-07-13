@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const cartStorage = localStorage.getItem('cart');
 
+    let prices = [];
+
     if (cartStorage !== null) {
         const inputOrderSubmitBtn = document.querySelector('#order');
         let cartItemsElement = document.querySelector('#cart__items');
@@ -19,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cartItemsElement.addEventListener('input', (event) => {
             // Check if the event was triggered by an itemQuantity input
             if (event.target.classList.contains('itemQuantity')) {
-                console.log(event.target.value);
+                console.log(prices);
                 const articleElement = event.target.closest('article');
                 const itemId = articleElement.dataset.id;
                 const localStorageData = JSON.parse(localStorage.getItem('cart'));
@@ -30,13 +32,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     const getLocalStorage = JSON.parse(localStorage.getItem('cart'));
                     const foundLsItem = getLocalStorage.find(lsItem => lsItem.id === itemId);
                     if (foundLsItem) {
+                        const price = prices.find(price => price.id === itemId);
                         const targetAncestorElement = event.target.closest('.cart__item__content');
+                        targetAncestorElement.querySelector('.cart__item__content__description > p:nth-of-type(2)').innerText = `€${Number(price.price) * Number(foundLsItem.quantity)}`;
                         targetAncestorElement.querySelector('.cart__item__content__settings__quantity > p').innerText = `Quantity : ${foundLsItem.quantity}`;
+
+                        // const itemQuantityElements = document.querySelector('#cart__items').querySelectorAll('.itemQuantity');
+                        // const itemQuantities = Array.prototype.map.call(itemQuantityElements, itemQuantityElement => itemQuantityElement.value);
+                        // const totalQuantity = itemQuantities.reduce((sum, item) => Number(sum) + Number(item), 0);
+                        // const totalQuantityElement = document.querySelector('#totalQuantity');
+                        // totalQuantityElement.innerText = totalQuantity;
+                        getTotalArticles();
                     }
                 }
             }
-
+``
         });
+
+
 
         // Another Event Delegation
         cartItemsElement.addEventListener('click', (event) => {
@@ -107,6 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     })
                     .then(data => {
+                        prices.push({id: cartItem.id, price: Number(data.price)});
                         const cartItemString = `
                          <article class="cart__item" data-id="${cartItem.id}" data-color="${cartItem.color}">
                             <div class="cart__item__img">
@@ -133,6 +147,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         cartItemsElement.insertAdjacentHTML('beforeend', cartItemString);
 
+                    })
+                    .then(() => {
+                        getTotalArticles()
                     })
                     .catch(err => {
                         console.error(err);
@@ -186,6 +203,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('Please check your input fields');
             }
         });
+
+        function getTotalArticles() {
+            const itemQuantityElements = document.querySelector('#cart__items').querySelectorAll('.itemQuantity');
+            const itemQuantities = Array.prototype.map.call(itemQuantityElements, itemQuantityElement => itemQuantityElement.value);
+            const totalQuantity = itemQuantities.reduce((sum, item) => Number(sum) + Number(item), 0);
+            const totalQuantityElement = document.querySelector('#totalQuantity');
+            totalQuantityElement.innerText = totalQuantity;
+        }
 
     } else {
         console.error('Cart is empty');
