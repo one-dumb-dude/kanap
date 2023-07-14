@@ -1,3 +1,7 @@
+// On page load, it fetches the list of products from the API.
+// For each product, it creates an HTML card and appends it to the 'items' section.
+// It handles both network errors and API errors.
+
 document.addEventListener('DOMContentLoaded', () => {
     let data;
 

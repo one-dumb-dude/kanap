@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
         cartItemsElement.addEventListener('input', (event) => {
             // Check if the event was triggered by an itemQuantity input
             if (event.target.classList.contains('itemQuantity')) {
-                console.log(prices);
                 const articleElement = event.target.closest('article');
                 const itemId = articleElement.dataset.id;
                 const localStorageData = JSON.parse(localStorage.getItem('cart'));
@@ -51,6 +50,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         // Another Event Delegation
+        // Adds a click event listener to the cartItemsElement.
+        // When an item with the 'deleteItem' class is clicked, it identifies and removes
+        // the corresponding item from local storage, and refreshes the displayed cart.
         cartItemsElement.addEventListener('click', (event) => {
             if (event.target.classList.contains('deleteItem')) {
                 const idToRemove = event.target.closest('.cart__item').getAttribute('data-id');
@@ -64,32 +66,28 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        const alphaRegex = new RegExp(/^[A-Za-z]+$/);
+        const namesRegex = new RegExp(/^[A-Za-z]+[\-]* *$/);
+        const cityRegex = new RegExp(/^(?=.*[A-Za-z])[A-Za-z\- ]*$/);
         const emailRegex = new RegExp(/^[\w.-]+@[a-zA-Z_-]+?(?:\.[a-zA-Z]{2,6})+$/);
 
         const firstNameInputElement = document.querySelector("#firstName");
         firstNameInputElement.addEventListener('blur', (event) =>
-            validateInput(event.target, alphaRegex)
+            validateInput(event.target, namesRegex)
         );
 
         const lastNameInputElement = document.querySelector("#lastName");
         lastNameInputElement.addEventListener('blur', (event) =>
-            validateInput(event.target, alphaRegex)
+            validateInput(event.target, namesRegex)
         );
 
         const addressInputElement = document.querySelector('#address');
-        addressInputElement.addEventListener('blur', (event) => {
-            console.log(event.target.value);
-            if (event.target.value.trim() === '') {
-                event.target.classList.add('input-error');
-            } else {
-                event.target.classList.remove('input-error');
-            }
-        });
+        addressInputElement.addEventListener('blur', (event) =>
+            validateInput(event.target)
+        );
 
         const cityInputElement = document.querySelector('#city');
         cityInputElement.addEventListener('blur', (event) =>
-            validateInput(event.target, alphaRegex)
+            validateInput(event.target, cityRegex)
         );
 
         // /^[a-zA-Z0-9.! #$%&'*+/=? ^_`{|}~-]+@[a-zA-Z0-9-]+(?:\. [a-zA-Z0-9-]+)*$/
@@ -98,13 +96,71 @@ document.addEventListener('DOMContentLoaded', () => {
             validateInput(event.target, emailRegex)
         );
 
+
+        // validateInput checks if an input matches a regex pattern and handles error display.
+        // It takes an HTML input element and a regex pattern. It tests the input value against
+        // the regex, updates error message and applies/removes error styling as appropriate.
         function validateInput(target, regex) {
+            const firstNameErrorMsgElement = document.querySelector('#firstNameErrorMsg');
+            const lastNameErrorMsgElement = document.querySelector('#lastNameErrorMsg');
+            const addressErrorMsgElement = document.querySelector('#addressErrorMsg');
+            const cityErrorMsgElement = document.querySelector('#cityErrorMsg');
+            const emailErrorMsg = document.querySelector('#emailErrorMsg');
+
             if (!target.value.match(regex) || target.value.trim() === '') {
+
                 target.classList.add('input-error');
+
+                switch (target.id) {
+                    case 'firstName':
+                        firstNameErrorMsgElement.innerText = 'Invalid input. first name must contain at least one alphabetical character. Spaces and hyphens are allowed but not required';
+                        break;
+                    case 'lastName':
+                        lastNameErrorMsgElement.innerText = 'Invalid input. last name must contain at least one alphabetical character. Spaces and hyphens are allowed but not required';
+                        break;
+                    case 'address':
+                        addressErrorMsgElement.innerText = 'Invalid input. Address must not be empty';
+                        break;
+                    case 'city':
+                        cityErrorMsgElement.innerText = 'Invalid input. City must contain at least one alphabetical character. Spaces and hyphens are allowed but not required';
+                        break;
+                    case 'email':
+                        emailErrorMsg.innerText = 'Invalid input. Must be in "email" format.';
+                        break;
+                    default:
+                        break;
+                }
+
             } else {
+
                 target.classList.remove('input-error');
+
+                switch (target.id) {
+                    case 'firstName':
+                        firstNameErrorMsgElement.innerText = '';
+                        break;
+                    case 'lastName':
+                        lastNameErrorMsgElement.innerText = '';
+                        break;
+                    case 'address':
+                        addressErrorMsgElement.innerText = '';
+                        break;
+                    case 'city':
+                        cityErrorMsgElement.innerText = '';
+                        break;
+                    case 'email':
+                        emailErrorMsg.innerText = '';
+                        break;
+                    default:
+                        break;
+                }
             }
         }
+
+        //  cartInfo populates the shopping cart with product details fetched from the server.
+        //  It accepts a stringified cart storage JSON, parses it, and iterates through each item.
+        //  For each item, it makes a fetch request, builds an HTML string with product details,
+        //  appends the HTML to the cart, and handles potential fetch errors.
 
         function cartInfo(passedInCartStorage) {
             const cartItems = JSON.parse(passedInCartStorage);
@@ -158,14 +214,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
 
+        // This is the click event for the "order" button.
+        // This click event contains logic for checking the input fields and throwing error messages if inputs are invalid
+        // if the input validate, then the order is processed and sent to the confirmation page.
         inputOrderSubmitBtn.addEventListener('click', (event) => {
             event.preventDefault();
             if (
-                firstNameInputElement.value.match(/^[A-Za-z]+$/) &&
-                lastNameInputElement.value.match(/^[A-Za-z]+$/) &&
+                firstNameInputElement.value.match(namesRegex) &&
+                lastNameInputElement.value.match(namesRegex) &&
                 addressInputElement.value.trim() !== '' &&
-                cityInputElement.value.match(/^[A-Za-z]+$/) &&
-                emailInputElement.value.match(/^[\w.-]+@[a-zA-Z_-]+?(?:\.[a-zA-Z]{2,6})+$/)
+                cityInputElement.value.match(cityRegex) &&
+                emailInputElement.value.match(emailRegex)
             ) {
                 const cartItems = JSON.parse(localStorage.getItem('cart'));
                 const data = {
@@ -194,15 +253,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 // window.location.href = 'confirmation.html'
 
             } else {
-                validateInput(firstNameInputElement, alphaRegex);
-                validateInput(lastNameInputElement, alphaRegex);
+                validateInput(firstNameInputElement, namesRegex);
+                validateInput(lastNameInputElement, namesRegex);
                 validateInput(addressInputElement);
-                validateInput(cityInputElement, alphaRegex);
+                validateInput(cityInputElement, cityRegex);
                 validateInput(emailInputElement, emailRegex);
                 console.error('Please check your input fields');
             }
         });
 
+        // This function contains logic for obtaining the total quantity of items in the cart and displaying that information.
+        // This function also calculates the item prices with its associated qty and presents the total to the front end.
         function getTotalArticles() {
             let totalPrice = 0;
             const cartItemsElement = document.querySelector('#cart__items')
@@ -225,6 +286,5 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('Cart is empty');
     }
-
 
 });

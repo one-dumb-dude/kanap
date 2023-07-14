@@ -3,6 +3,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const id = params.get('id');
     let productImage;
 
+    // Fetch product details from the API using product ID.
+    // Then, use the fetched data to populate product image, price, title, description, and color options.
+    // Log any errors that occur during the fetch operation.
     fetch(`http://localhost:3000/api/products/${id}`)
         .then(response => response.json())
         .then(data => {
@@ -33,28 +36,33 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
     const addToCartBtn = document.querySelector('#addToCart');
+
+    // Add an event listener to the addToCart button.
+    // When clicked, it fetches the selected color and quantity.
+    // If valid values are selected, it updates or adds the product to the local storage cart and redirects to the cart page.
     addToCartBtn.addEventListener('click', () => {
-
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
-
         const color = document.querySelector('#colors').value;
         const quantity = document.querySelector('#quantity').value;
 
-        const cartItem = cart.find(item => item.id === id && item.color === color);
+        if (color !== '' && quantity >= 1) {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-        if (cartItem) {
-            cartItem.quantity = Number(cartItem.quantity) + Number(quantity);
-        } else {
-            cart.push({
-                id,
-                color,
-                quantity
-            });
+            const cartItem = cart.find(item => item.id === id && item.color === color);
+
+            if (cartItem) {
+                cartItem.quantity = Number(cartItem.quantity) + Number(quantity);
+            } else {
+                cart.push({
+                    id,
+                    color,
+                    quantity
+                });
+            }
+
+            localStorage.setItem('cart', JSON.stringify(cart));
+
+            window.location.href = 'cart.html';
         }
-
-        localStorage.setItem('cart', JSON.stringify(cart));
-
-        window.location.href = 'cart.html';
     });
 
 });
